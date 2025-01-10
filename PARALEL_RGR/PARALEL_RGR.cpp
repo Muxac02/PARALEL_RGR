@@ -16,7 +16,7 @@ class IntElement : public Base {
 public:
     IntElement(int value) : value(value) {}
     void print() const override {
-        std::cout << "Int: " << value << std::endl;
+        std::cout << value;
     }
     bool equalWithPrecision(double val, double precision) const {
         if (std::abs((double)this->value - val) <= precision) {
@@ -37,7 +37,7 @@ class DoubleElement : public Base {
 public:
     DoubleElement(double value) : value(value) {}
     void print() const override {
-        std::cout << "Double: " << value << std::endl;
+        std::cout << value;
     }
     bool equalWithPrecision(double val, double precision) const {
         if (std::abs(this->value - val) <= precision) {
@@ -59,6 +59,29 @@ private:
     double value;
 };
 
+std::vector<int> singleThreadSearch(std::vector<std::unique_ptr<Base>>& vec, int value, double precision=0.000) {
+    std::vector<int> res;
+    for (int i = 0; i < vec.size(); i++) 
+    {
+        if (vec[i]->equalWithPrecision(value, precision))
+        {
+            res.push_back(i);
+        }
+    }
+    return res;
+}
+std::vector<int> singleThreadSearch(std::vector<std::unique_ptr<Base>>& vec, double value, double precision = 0.000) {
+    std::vector<int> res;
+    for (int i = 0; i < vec.size(); i++)
+    {
+        if (vec[i]->equalWithPrecision(value, precision))
+        {
+            res.push_back(i);
+        }
+    }
+    return res;
+}
+
 int main() {
     // Вектор уникальных указателей на объекты базового класса
     std::vector<std::unique_ptr<Base>> elements;
@@ -67,8 +90,15 @@ int main() {
     elements.push_back(std::make_unique<DoubleElement>(5.0001));
     // Вывод элементов
     for (const auto& element : elements) {
-        std::cout << element->equalWithPrecision(5)<<"|" <<element->equalWithPrecision(5.001)<< std::endl;
+        element->print();
+        std::cout << " ";
     }
+    std::cout << std::endl;
+    for (const auto el : singleThreadSearch(elements, 5))
+    {
+        std::cout << el << " ";
+    }
+    std::cout << std::endl;
     elements.clear();
     return 0;
 }
