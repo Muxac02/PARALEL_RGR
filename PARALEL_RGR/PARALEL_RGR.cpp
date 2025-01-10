@@ -11,7 +11,7 @@ public:
     virtual bool equalWithPrecision(double val, double precision = 0.001) const = 0;
     virtual bool equalWithPrecision(int val, double precision = 0.001) const = 0;
     virtual ~Base() {} // Виртуальный деструктор
-    virtual int getValue() const = 0;
+
 };
 // Класс для хранения целого числа
 class IntElement : public Base {
@@ -33,10 +33,7 @@ public:
     bool equalWithPrecision(int val, double precision) const {
         return this->value == val;
     }
-    int getValue()
-    {
-        return value;
-    }
+
 
 };
 // Класс для хранения числа с плавающей точкой
@@ -64,10 +61,7 @@ public:
             return false;
         }
     }
-    double getValue()
-    {
-        return value;
-    }
+
 
 };
 
@@ -83,7 +77,7 @@ void fillRandom(std::vector<std::unique_ptr<Base>>& vec, int n)
         }
         else
         {
-            double t2 = rand() % 10000 / 10000;
+            double t2 = rand() % 10000 / 10000.0;
             vec.push_back(std::make_unique<DoubleElement>(t + t2));
         }
        
@@ -97,7 +91,7 @@ int main() {
     fillRandom(elements, 10);
     for (auto& e : elements)
     {
-        std::cout << e->getValue()<< "";
+       e->print();
     }
     // Добавление элементов разных типов в массив
     elements.push_back(std::make_unique<IntElement>(5));
