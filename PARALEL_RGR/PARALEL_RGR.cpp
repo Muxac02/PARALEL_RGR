@@ -1,6 +1,7 @@
 ﻿#include <iostream>
 #include <typeinfo>
 #include <vector>
+#include <random>
 //#include <ostream>
 
 // Базовый класс
@@ -10,9 +11,12 @@ public:
     virtual bool equalWithPrecision(double val, double precision = 0.001) const = 0;
     virtual bool equalWithPrecision(int val, double precision = 0.001) const = 0;
     virtual ~Base() {} // Виртуальный деструктор
+
 };
 // Класс для хранения целого числа
 class IntElement : public Base {
+private:
+    int value;
 public:
     IntElement(int value) : value(value) {}
     void print() const override {
@@ -29,11 +33,13 @@ public:
     bool equalWithPrecision(int val, double precision) const {
         return this->value == val;
     }
-private:
-    int value;
+
+
 };
 // Класс для хранения числа с плавающей точкой
 class DoubleElement : public Base {
+private:
+    double value;
 public:
     DoubleElement(double value) : value(value) {}
     void print() const override {
@@ -55,9 +61,28 @@ public:
             return false;
         }
     }
-private:
-    double value;
+
+
 };
+
+void fillRandom(std::vector<std::unique_ptr<Base>>& vec, int n)
+{
+    
+    for (int i = 0; i < n; ++i)
+    {
+        int t = rand() % 10000;
+        if (t % 2 == 0)
+        {
+            vec.push_back(std::make_unique<IntElement>(t));
+        }
+        else
+        {
+            double t2 = rand() % 10000 / 10000.0;
+            vec.push_back(std::make_unique<DoubleElement>(t + t2));
+        }
+       
+    }
+}
 
 std::vector<int> singleThreadSearch(std::vector<std::unique_ptr<Base>>& vec, int value, double precision=0.000) {
     std::vector<int> res;
@@ -83,8 +108,14 @@ std::vector<int> singleThreadSearch(std::vector<std::unique_ptr<Base>>& vec, dou
 }
 
 int main() {
+    srand(time(0));
     // Вектор уникальных указателей на объекты базового класса
     std::vector<std::unique_ptr<Base>> elements;
+    fillRandom(elements, 10);
+    for (auto& e : elements)
+    {
+       e->print();
+    }
     // Добавление элементов разных типов в массив
     elements.push_back(std::make_unique<IntElement>(5));
     elements.push_back(std::make_unique<DoubleElement>(5.0001));
