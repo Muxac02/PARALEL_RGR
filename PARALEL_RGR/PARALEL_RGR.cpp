@@ -31,7 +31,12 @@ public:
         }
     }
     bool equalWithPrecision(int val, double precision) const {
-        return this->value == val;
+        if (std::abs(this->value - val) <= precision) {
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 
 
@@ -65,39 +70,29 @@ public:
 
 };
 
-void fillRandom(std::vector<std::unique_ptr<Base>>& vec, int n)
+void fillRandom(std::vector<std::unique_ptr<Base>>& vec, int n, int max = 10000)
 {
     
     for (int i = 0; i < n; ++i)
     {
-        int t = rand() % 10000;
+        int t = rand() % max;
         if (t % 2 == 0)
         {
             vec.push_back(std::make_unique<IntElement>(t));
         }
         else
         {
-            double t2 = rand() % 10000 / 10000.0;
+            double t2 = rand() % max / 10000.0;
             vec.push_back(std::make_unique<DoubleElement>(t + t2));
         }
        
     }
 }
 
-std::vector<int> singleThreadSearch(std::vector<std::unique_ptr<Base>>& vec, int value, double precision=0.000) {
+template<typename T>
+std::vector<int> singleThreadSearch(std::vector<std::unique_ptr<Base>>& vec, T value, double precision=0.000) {
     std::vector<int> res;
     for (int i = 0; i < vec.size(); i++) 
-    {
-        if (vec[i]->equalWithPrecision(value, precision))
-        {
-            res.push_back(i);
-        }
-    }
-    return res;
-}
-std::vector<int> singleThreadSearch(std::vector<std::unique_ptr<Base>>& vec, double value, double precision = 0.000) {
-    std::vector<int> res;
-    for (int i = 0; i < vec.size(); i++)
     {
         if (vec[i]->equalWithPrecision(value, precision))
         {
@@ -109,25 +104,19 @@ std::vector<int> singleThreadSearch(std::vector<std::unique_ptr<Base>>& vec, dou
 
 int main() {
     srand(time(0));
-    // Вектор уникальных указателей на объекты базового класса
     std::vector<std::unique_ptr<Base>> elements;
-    fillRandom(elements, 10);
-    for (auto& e : elements)
-    {
-       e->print();
-    }
-    // Добавление элементов разных типов в массив
-    elements.push_back(std::make_unique<IntElement>(5));
-    elements.push_back(std::make_unique<DoubleElement>(5.0001));
-    // Вывод элементов
+    fillRandom(elements, 200, 50);
     for (const auto& element : elements) {
         element->print();
         std::cout << " ";
     }
-    std::cout << std::endl;
-    for (const auto el : singleThreadSearch(elements, 5))
+    std::cout << "\nSearch result:\n";
+    std::vector<int> res = singleThreadSearch(elements, 10, 1);
+    for (const auto el : res)
     {
-        std::cout << el << " ";
+        std::cout << "elements[" << el << "] = ";
+        elements[el]->print();
+        std::cout << std::endl;
     }
     std::cout << std::endl;
     elements.clear();
