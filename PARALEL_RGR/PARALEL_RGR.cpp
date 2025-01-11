@@ -3,8 +3,10 @@
 #include <vector>
 #include <random>
 #include <chrono>
+#include <thread>
+#include <mutex>
 //#include <ostream>
-
+std::mutex mutex;
 //using namespace std::chrono_literals;
 
 // Базовый класс
@@ -93,9 +95,9 @@ void fillRandom(std::vector<std::unique_ptr<Base>>& vec, int n, int max = 10000)
 }
 
 template<typename T>
-std::vector<int> singleThreadSearch(std::vector<std::unique_ptr<Base>>& vec, T value, double precision=0.000) {
+std::vector<int> singleThreadSearch(std::vector<std::unique_ptr<Base>>& vec, T value, int start, int end, double precision = 0.000) {
     std::vector<int> res;
-    for (int i = 0; i < vec.size(); i++) 
+    for (int i = start; i < end; i++) 
     {
         if (vec[i]->equalWithPrecision(value, precision))
         {
@@ -113,6 +115,36 @@ int pow(int a, int b) {
 
 }
 
+template<typename T>
+std::vector<int> multiThreadSearch(std::vector<std::unique_ptr<Base>>& vec, T value, int threadCount = 1, double precision = 0.000) {
+    std::vector<int> res;
+    std::vector<std::thread> threads;
+    for (int i = 0; i < threadCount; i++)
+    {
+        int start = vec.size() / threadCount * i;
+        int end = vec.size() / threadCount * (i + 1);
+        threads.push_back(std::thread([&res, &vec, &value, &precision, &start, &end]() {
+            std::vector <int> tmp;
+            if (end == vec.size())
+            {
+                tmp = singleThreadSearch(vec, value, start, end - 1, precision);
+            }
+            else
+            {
+                tmp = singleThreadSearch(vec, value, start, end, precision);
+            }
+            mutex.lock();
+            res.insert(std::end(res), std::begin(tmp), std::end(tmp));
+            mutex.unlock();
+        }));
+    }
+    for (auto &t : threads) {
+        t.join();
+    }
+    threads.clear();
+    return res;
+}
+
 int main() {
     srand(time(0));
     std::vector<std::unique_ptr<Base>> elements;
@@ -125,7 +157,7 @@ int main() {
         {
             fillRandom(elements, pow(10, i), 10000);
             const auto start = std::chrono::high_resolution_clock::now();
-            std::vector<int> res = singleThreadSearch(elements, 500, 0.001);
+            std::vector<int> res = multiThreadSearch(elements, 500, 4, 0.001);
             const auto end = std::chrono::high_resolution_clock::now();
             const std::chrono::duration<double, std::milli> elapsed = end - start;
             std::cout << "Attempt "<<j+1<<" | found " << res.size() << " elements in  " << elapsed.count() << " ms" << std::endl;
