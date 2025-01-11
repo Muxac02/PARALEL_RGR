@@ -148,22 +148,26 @@ std::vector<int> multiThreadSearch(std::vector<std::unique_ptr<Base>>& vec, T va
 int main() {
     srand(time(0));
     std::vector<std::unique_ptr<Base>> elements;
-    int testNum = 5;
-    for (int i = 3; i<8; i++)
+    int testNum = 50;
+    for (int threadCount = 1; threadCount < 17; threadCount++)
     {
-        std::cout << "Vector length: " << pow(10, i) << std::endl;
-        double averageTime = 0.0;
-        for (int j = 0; j < testNum; j++)
+        std::cout << "-------------------------------------------------------------------\nTests for " << threadCount << " threads in search"<<std::endl;
+        for (int i = 3; i < 8; i++)
         {
+            //std::cout << "Vector length: " << pow(10, i) << std::endl;
             fillRandom(elements, pow(10, i), 10000);
-            const auto start = std::chrono::high_resolution_clock::now();
-            std::vector<int> res = multiThreadSearch(elements, 500, 4, 0.001);
-            const auto end = std::chrono::high_resolution_clock::now();
-            const std::chrono::duration<double, std::milli> elapsed = end - start;
-            std::cout << "Attempt "<<j+1<<" | found " << res.size() << " elements in  " << elapsed.count() << " ms" << std::endl;
-            averageTime += elapsed.count();
+            double averageTime = 0.0;
+            for (int j = 0; j < testNum; j++)
+            {
+                const auto start = std::chrono::high_resolution_clock::now();
+                std::vector<int> res = multiThreadSearch(elements, 500, threadCount, 0.001);
+                const auto end = std::chrono::high_resolution_clock::now();
+                const std::chrono::duration<double, std::milli> elapsed = end - start;
+                //std::cout << "Attempt " << j + 1 << " | found " << res.size() << " elements in  " << elapsed.count() << " ms" << std::endl;
+                averageTime += elapsed.count();
+            }
+            std::cout << "Average time for " << pow(10, i) << " elements in vector: " << averageTime / testNum << " ms" << std::endl;
         }
-        std::cout << "Average time for " << pow(10, i) << " elements in vector: " << averageTime / testNum << " ms" << std::endl;
     }
     //for (const auto& element : elements) {
     //    element->print();
